@@ -79,7 +79,7 @@
 				f = smoothstep(0., 1., f);
 				float2 uv = (p.xy + float2(37.0, 17.0) * p.z) + f.xy;
 				float2 rg = tex2D(_MainTex, (uv + 0.5) / 256.0).rg; //dernier paramètre ",-100)"
-				return lerp(rg.y, rg.x, f.z);
+				return lerp(rg.y * 2.0, rg.x * 2.0, f.z*2.0);
 			}
 			float octaves(float2 uv)
 			{
@@ -150,7 +150,7 @@
 				float totalDistance = 0.;
 				float dist = 0.;
 				int o = 0;
-				for (int i = 0; i < 70; i++)
+				for (int i = 0; i < 75; i++)
 				{
 					o = i;
 					dist = map(ro + rd * totalDistance).d;
