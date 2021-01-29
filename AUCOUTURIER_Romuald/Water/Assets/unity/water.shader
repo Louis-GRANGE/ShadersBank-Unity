@@ -157,6 +157,7 @@ Shader "Water" {
 		struct VertexInput {
 			float4 vertex : POSITION;
 		};
+		
 		struct VertexOutput {
 			float4 pos : SV_POSITION;
 			float2 uv : TEXCOORD0;
@@ -184,27 +185,40 @@ Shader "Water" {
 			half3 normal = half3(0, 1, 0);
 
 #ifdef USE_DISPLACEMENT
+			// Récupére la distance de la camera par rapport à l'object
 			float cameraDistance = length(_WorldSpaceCameraPos.xyz - worldPos);
+			// récupére la valeur du noise par rapport à la position dans le monde.
+			// Le temps, la direction du vent
 			float2 noise = GetNoise(worldPos.xz, timer * windDir * 0.5);
 
 			half3 tangent;
+			// Les paramètres des wagues
 			float4 waveSettings = float4(windDir, _WaveSteepness, _WaveTiling);
+			// L'emplitude de la vague
 			float4 waveAmplitudes = _WaveAmplitude * _WaveAmplitudeFactor;
+			// récupére la position du monde en utilisant une displacement map.
+			// par rapport à la distance avec la caméra
 			worldPos = ComputeDisplacement(worldPos, cameraDistance, noise, timer,
 				waveSettings, waveAmplitudes, _WavesIntensity, _WavesNoise,
 				normal, tangent);
 
 			// add extra noise height from a heightmap
 			float heightIntensity = _HeightIntensity * (1.0 - cameraDistance / 100.0) * _WaveAmplitude;
+			// récupére les coordonnées de texture
 			float2 texCoord = worldPos.xz * 0.05 *_TextureTiling;
-			if (heightIntensity > 0.02)
-			{
+			
+			// Si l'intensité d'hauteur est supérieur à 0.02
+			// récupére la par rapport à la hauteur du noise
+			if (heightIntensity > 0.02) {
 				float height = ComputeNoiseHeight(_HeightTexture, _WavesIntensity, _WavesNoise,
 					texCoord, noise, timer);
+				// Ajoute la taille sur la position en y dans le monde
 				worldPos.y += height * heightIntensity;
 			}
 
-			modelPos = mul(unity_WorldToObject, float4(worldPos, 1));
+			// Change la position du monde avec la fonction mul de Unity
+			modelPos = UnityViewToClipPos(float4(worldPos, 1));
+			// modelPos = mul(unity_WorldToObject, float4(worldPos, 1));
 			o.tangent = tangent;
 			o.bitangent = cross(normal, tangent);
 #endif
@@ -316,7 +330,7 @@ Shader "Water" {
 			color.rgb = 0.5 + 2 * ambientColor + specularColor + clamp(dot(normal, lightDir), 0, 1) * 0.5;
 #endif
 
-			return float4(color, 1.0);
+			return float4(color * _SurfaceColor, 1.0);
 		}
 		ENDCG
 		}

@@ -69,9 +69,10 @@ Shader "Custom/WaterShader" {
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 				//vertex displacement
-				#ifdef VERTEX_DISPLACEMENT
-					o.vertex.xy += (2 * tex2Dlod(_VertexDisplacementTex, float4(o.uv.xy+_Time[1]/_VertexDisplacementSpeedDivider, 0, 0)).rg - 1)/ _VertexDisplacementAmountDivider;
-				#endif
+#ifdef VERTEX_DISPLACEMENT
+				o.vertex.xy += (2 * tex2Dlod(_VertexDisplacementTex,
+					float4(o.uv.xy+_Time[1]/_VertexDisplacementSpeedDivider, 0, 0)).rg - 1) / _VertexDisplacementAmountDivider;
+#endif
 				UNITY_TRANSFER_FOG(o,o.vertex);
 				return o;
 			}
@@ -92,27 +93,27 @@ Shader "Custom/WaterShader" {
 				// sample the texture
 				// flipping the uv plane
 				i.uv.y = 1.0 - i.uv.y;
-				
-				// Correction de la perspective en fonction de la valeur des UV's
-				half2 perspectiveCorrection = half2(2 * (0.5 - i.uv.x) * i.uv.y, 0);
 
 				// Variable pour le flou
 				half2 offset;
 
+				// Position de l'uv en x par rapport au temps
 				float iuvxt = i.uv.x + _Time[1];
 				float wp = _WorldSpaceCameraPos.x / _ParallaxDivider;
 
-				// Si la correction de la perpective est activé
-				// ajoute la correction sinon rend la texture de façon basique
-				// Prend le rouge et le vert des normals maps de Displacement et DisplacementDetail
-				// en fonction de la position de la caméra et de la position de l'uv en X en ajoutant du temps
-				#ifdef PERSPECTIVE_CORRECTION
-					offset = tex2D(_DisplacementTex, float2(iuvxt / _DisplacementSpeedDivider + wp, i.uv.y) + perspectiveCorrection).rg
-						+ tex2D(_DisplacementDetailTex, float2(iuvxt / _DisplacementDetailSpeedDivider + wp, i.uv.y) + perspectiveCorrection).rg;
-				#else
-					offset = tex2D(_DisplacementTex, float2(iuvxt / _DisplacementSpeedDivider + wp, i.uv.y)).rg
-						+ tex2D(_DisplacementDetailTex, float2(iuvxt / _DisplacementDetailSpeedDivider + wp, i.uv.y)).rg;
-				#endif
+				// récupére les informations de la texture par rapport à la position de l'uv en x
+				// diviser par DisplacementDetailSpeedDivider plus la position de la caméra diviser par le parallax
+#ifdef PERSPECTIVE_CORRECTION
+				// Correction de la perspective en fonction de la valeur des UV's
+				half2 perspectiveCorrection = half2(2 * (0.5 - i.uv.x) * i.uv.y, 0);
+
+				// On ajoute la correction de perspective au UV
+				offset = tex2D(_DisplacementTex, float2(iuvxt / _DisplacementSpeedDivider + wp, i.uv.y) + perspectiveCorrection).rg
+					+ tex2D(_DisplacementDetailTex, float2(iuvxt / _DisplacementDetailSpeedDivider + wp, i.uv.y) + perspectiveCorrection).rg;
+#else
+				offset = tex2D(_DisplacementTex, float2(iuvxt / _DisplacementSpeedDivider + wp, i.uv.y)).rg
+					+ tex2D(_DisplacementDetailTex, float2(iuvxt / _DisplacementDetailSpeedDivider + wp, i.uv.y)).rg;
+#endif
 
 				// Ajuste l'UV pour qu'il soit entre 0 et 1
 				float2 adjusted = i.uv.xy + (offset - 0.5) / _DisplacementAmountDivider;
