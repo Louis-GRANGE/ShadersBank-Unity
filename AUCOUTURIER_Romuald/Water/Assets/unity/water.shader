@@ -54,7 +54,7 @@ Shader "Water" {
 		_FoamIntensity("Foam Intensity", Range(0, 1)) = 0.5
 		_ShoreFade("Shore Fade",  Range(0.1, 3)) = 0.3
 	}
-		SubShader{
+	SubShader{
 		Tags{
 		"IgnoreProjector" = "True"
 		"Queue" = "Transparent"
