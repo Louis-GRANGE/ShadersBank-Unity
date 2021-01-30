@@ -71,7 +71,7 @@ Shader "Custom/WaterShader" {
 				//vertex displacement
 #ifdef VERTEX_DISPLACEMENT
 				o.vertex.xy += (2 * tex2Dlod(_VertexDisplacementTex,
-					float4(o.uv.xy+_Time[1]/_VertexDisplacementSpeedDivider, 0, 0)).rg - 1) / _VertexDisplacementAmountDivider;
+					float4(o.uv.xy + _Time[1] / _VertexDisplacementSpeedDivider, 0, 0)).rg - 1) / _VertexDisplacementAmountDivider;
 #endif
 				UNITY_TRANSFER_FOG(o,o.vertex);
 				return o;
@@ -121,7 +121,8 @@ Shader "Custom/WaterShader" {
 				// Get color of main texture to ajusted uv position
 				fixed4 col = tex2D(_MainTex, adjusted);
 				// Ajuste la couleur 
-				fixed4 colAdj = col * float4(AdjustContrastCurve(_Tint, 1 - Grayscale(col)).rgb, 1);
+				fixed4 colAdj = col;
+				// colAdj = col * float4(AdjustContrastCurve(_Tint, 1 - Grayscale(col)).rgb, 1);
 
 				//foam thresholding
 				if ((abs((offset.x - 0.5) / _DisplacementAmountDivider) > _FoamThreshold && abs((offset.y - 0.5) / _DisplacementAmountDivider)
