@@ -1,5 +1,4 @@
-﻿
-Shader "Water" {
+﻿Shader "Water" {
 	Properties{
 		[Header(Features)]
 		[Toggle(USE_DISPLACEMENT)] _UseDisplacement("Displacement", Float) = 0

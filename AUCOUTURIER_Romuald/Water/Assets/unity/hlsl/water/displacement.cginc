@@ -62,8 +62,7 @@ float ComputeNoiseHeight(sampler2D heightTexture, float4 wavesIntensity, float4 
 							texCoord * 0.5 + timedWindDir * 0.016 + wavesNoise.z,
 							texCoord * 0.3 + timedWindDir * 0.008 + wavesNoise.w };
 	float height = 0;
-	for (int i = 0; i < 4; ++i)
-	{
+	for (int i = 0; i < 4; ++i) {
 		height += tex2Dlod(heightTexture, float4(texCoords[i], 0, 0)).x * wavesIntensity[i];
 	}
 
@@ -92,10 +91,9 @@ float3 ComputeDisplacement(float3 worldPos, float cameraDistance, float2 noise, 
 	// compute position and normal from several sine and gerstner waves
 	tangent = normal = half3(0, 1, 0);
 	float2 timers = float2(timer * 0.5, timer * 0.25);
-	for (int i = 2; i < 4; ++i)
-	{
+	for (int i = 2; i < 4; ++i) {
 		float A = wavesIntensity[i] * amplitudes[i];
-		float3 vals = SineWaveValues(worldPos.xz * waveTiling, windDir, A, wavelengths[i], timer);
+		float3 vals = SineWaveValues(worldPos.xz * waveTiling, windDir, A, wavelengths[i], timers);
 		normal += wavesIntensity[i] * SineWaveNormal(windDir, A, vals);
 		tangent += wavesIntensity[i] * SineWaveTangent(windDir, A, vals);
 		worldPos.y += SineWaveDelta(A, vals);
@@ -103,8 +101,7 @@ float3 ComputeDisplacement(float3 worldPos, float cameraDistance, float2 noise, 
 
 	// using normalized wave steepness, tranform to Q
 	float2 Q = waveSteepness / ((2 * 3.14159265 / wavelengths.xy) * amplitudes.xy);
-	for (int j = 0; j < 2; ++j)
-	{
+	for (int j = 0; j < 2; ++j) {
 		float A = wavesIntensity[j] * amplitudes[j];
 		float3 vals = GerstnerWaveValues(worldPos.xz * waveTiling, windDir, A, wavelengths[j], Q[j], timer);
 		normal += wavesIntensity[j] * GerstnerWaveNormal(windDir, A, Q[j], vals);
@@ -114,8 +111,7 @@ float3 ComputeDisplacement(float3 worldPos, float cameraDistance, float2 noise, 
 
 	normal = normalize(normal);
 	tangent = normalize(tangent);
-	if (length(wavesIntensity) < 0.01)
-	{
+	if (length(wavesIntensity) < 0.01) {
 		normal = half3(0, 1, 0);
 		tangent = half3(0, 0, 1);
 	}
